@@ -1,4 +1,4 @@
-console.log("staart");
+console.log("start");
 
 
 // Express is a node module for building HTTP servers
@@ -41,8 +41,8 @@ httpServer.listen(8010);
 
 // WebSocket Portion
 // WebSockets work with the HTTP server
-const { Server } = require('socket.io');
-const io = new Server(httpServer, {});
+// this is the line that works with p5livemedia's socket version:
+var io = require('socket.io').listen(httpServer);
 
 //var io = require('socket.io').listen(httpServer);
 
