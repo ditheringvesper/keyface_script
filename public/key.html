@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+	<html lang="en">
+		<title>
+			...
+		</title>
+	  <head>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/addons/p5.sound.min.js"></script>	
+		<script type="text/javascript" src="https://p5livemedia.itp.io/simplepeer.min.js"></script>
+		<script type="text/javascript" src="https://p5livemedia.itp.io/socket.io.js"></script>    
+		<script type="text/javascript" src="https://p5livemedia.itp.io/p5livemedia.js"></script> 
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="sketch.js"></script>
+		<!-- <link rel="stylesheet" type="text/css" href="key_style.css"> -->
+		<meta charset="utf-8">
+
+		<script text="javascript">
+			var socket = io.connect();
+			var history = document.createElement("span");
+
+			socket.on('connect', function() {
+				console.log("Connected");
+			});
+
+			// Receive a message
+			socket.on('message', function(data) {
+				console.log("Got: " + data);
+				// document.getElementById('headText').innerHTML = data;
+				// blink();
+				addNew(data);
+				// document.getElementById('mouse').innerHTML =  '"' + data + '"';
+				// document.querySelector("#dialogueHistory").innerHTML = "- " + data;
+			});
+
+			// Receive from any event
+			socket.on('news', function (data) {
+				console.log(data);
+			});
+
+            // socket.on('otherevent', blink);
+
+            function blink() {
+                document.getElementById('mouse').style.background = "black";
+				setInterval(function(){
+					document.getElementById('mouse').style.background = "transparent";
+				}, 500);
+            }
+
+			
+			var sendmessage = function() {
+				var message = document.getElementById('message').value;
+				console.log("Sending: " + message);
+				document.getElementById('mouse').innerHTML =  '"' + message + '"';
+
+				// Send a messaage
+				socket.send(message);
+				blink();
+				// addNew("sm:" + message);
+			};
+			
+            window.addEventListener('load', function() {
+				var message = document.querySelector("#message");
+				message.focus();
+                console.log("Am I here?");
+							// Execute a function when the user releases a key on the keyboard
+				message.addEventListener("keyup", function(event) {
+				// Number 13 is the "Enter" key on the keyboard
+					if (event.keyCode === 13) {
+						// Cancel the default action, if needed
+						event.preventDefault();
+						// Trigger the button element with a click
+						document.getElementById("sendbtn").click();
+					}
+					document.getElementById("sendbtn").addEventListener("click",function(event){
+						message.value="";
+					});
+				});
+
+			document.addEventListener('mousemove', function(event) {
+                    // console.log(event);
+                    var mouseData = {
+                        x: event.clientX,
+                        y: event.clientY
+                    };
+                    socket.emit('mouse', mouseData);
+					// document.getElementById('mouse').innerHTML = mouseData.x + "," + mouseData.y;
+					document.getElementById('mouse').style.top = mouseData.y + "px";
+                 	document.getElementById('mouse').style.left = mouseData.x + "px";
+
+                });
+            });
+
+            socket.on('mouse', function(data) {
+                // console.log(data);
+                // document.getElementById(data).style.top = data.y + "px";
+                // document.getElementById(data).style.left = data.x + "px";
+            });
+
+            socket.on("newuser", function(socketid) {
+                var n = document.createElement("div");
+                n.id = socketid;
+                n.style.position = "relative";
+                n.innerHTML = socketid;
+				document.body.style.background="black";
+            });
+
+			function addNew(message){
+					var newText = document.createElement("span"); 
+					newText.innerHTML = '- ' + message + "<br>";
+					document.querySelector("#dialogueHistory").appendChild(newText);
+					// newText.innerHTML;
+					// console.log("log: "+document.querySelector("#dialogueHistory").innerHTML);
+					document.querySelector("#dialogueHistory").scrollTop = document.querySelector("#dialogueHistory").scrollHeight; // autoscroll to show the most recent message
+
+			}
+
+		</script>
+
+		<style>
+			html, header, body{
+				font-family: monospace;
+				position:fixed;
+				background: transparent;
+				overflow:visible;
+			}
+
+			#mouse{
+				z-index: 3;
+				position:absolute; 
+				stroke-width: 1vh;
+				margin: 13px;
+				background-color: transparent;
+				color:white;
+				/* -webkit-text-stroke-width: 0.5px;
+				-webkit-text-stroke-color: white;	 */
+				text-shadow: 1px 1px 3px black;
+				font-weight: 1000;
+			}
+
+			#dialogueHistory{
+				z-index: 3;
+				color:yellow;
+				font-weight: 600;
+				font-size: 5vh;
+				position: fixed;
+				width: 100vw;
+				text-align: center;
+				margin-top:85vh;
+				height: 10vh;
+				overflow: scroll;
+				-webkit-text-stroke-width: 1.5px;
+				-webkit-text-stroke-color: black;			
+				line-height: 5.5vh;
+				word-wrap: break-word;  
+
+			}
+
+			#message{
+				z-index: 3;
+				margin-top:92vh;
+				text-align: CENTER;
+				position:fixed;
+				background-color: transparent;
+				caret-color: yellow;
+				color: yellow;
+				width: 60vw;
+				text-shadow: 1px 1px 2px black;
+				border: none;
+				margin-left:20vw;
+				margin-right:20vw;
+				font-size: 2.5vh;
+				word-wrap: break-word;  
+				letter-spacing: 10px;
+			}
+			#message:focus{
+				border: hidden;
+				background-color: transparent;
+				outline: none;
+			}
+
+			#sendbtn{
+				z-index: 3;
+				position:fixed;
+				background-color: transparent;
+				font-family: monospace;
+				text-align: center;
+				color:white;
+				text-shadow: 0px 0px 5px black;
+				border-style: none;
+				margin-left:20vw;
+				margin-right:20vw;
+				margin-top: 8px;
+				font-size: 2vh;
+			}
+
+			#actionInput{
+				z-index: 3;
+				position:fixed;
+				margin-top:1vh;
+				text-align: CENTER;
+				background-color: transparent;
+				caret-color: white;
+				color: white;
+				width: 60vw;
+				text-shadow: 1px 1px 2px black;
+				border: none;
+				margin-left:20vw;
+				margin-right:20vw;
+				font-size: 2.5vh;
+				word-wrap: break-word;  
+				letter-spacing: 10px;
+			}
+			#actionInput:focus{
+				border: hidden;
+				background-color: transparent;
+				outline: none;
+			}
+			
+		</style>
+
+	</head>
+	<body>
+        <div id="mouse">...</div>
+
+		<div class="actionGroup">
+			<input type="password" id="actionInput" name="actionInput" value="" placeholder="(...)" autofocus>
+			<input id="sendbtn" type="button" value=" " onclick="sendmessage();">
+		</div>
+
+		<div class="dialogueGroup">
+			<input type="password" id="message" name="message" value="" placeholder="(...)" autofocus>
+			<!-- <input id="sendbtn" type="button" value=" " onclick="sendmessage();"> -->
+			<!-- <input type="button" value="listen" onclick="sendother();"> -->
+		</div>
+		<div id="dialogueHistory">...<br>
+
+
+		</div>
+	</body>
+</html>
